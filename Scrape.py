@@ -1,34 +1,30 @@
-import urllib, urllib.request, urllib.error, urllib.parse, os
-from bs4 import BeautifulSoup
+import json, urllib, urllib.request, urllib.error, urllib.parse, os, time
 
-user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-headers = {'User-Agent':user_agent,} #Headers needed to allow website access
-
-location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))) #Get location of Scrape.py
+location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))  # Get location of Scrape.py
 
 path = location + "/imgs/"
 
-if not os.path.exists(path): #Check if an imgs folder has been made
+run = True
+
+if not os.path.exists(path):  # Check if an imgs folder has been made
 	os.mkdir(path)
 
-def getImages():
-	count = 0
+def main():
+	start_time = time.time()
 	correctURL = False
 	url = input("Enter a url (including http://) : ")
-<<<<<<< HEAD
 	try:
 		a, b, c, board, filename, d = url.split("/")
 		jsonurl = "http://a.4cdn.org/" + board + "/thread/" + d + ".json"
 	except ValueError as e:
 		print('Error: Invalid URL')
 		invalidValue = True
-=======
->>>>>>> parent of 1ea54cc... Complete rewrite, uses the 4chan api instead of BeautifulSoup.
 
 	try: #Error handling, avoid program crashing
-		req = urllib.request.Request(url,None, headers)
+		req = urllib.request.Request(jsonurl)
 		response = urllib.request.urlopen(req)
 		data = response.read().decode("utf-8")
+		json_data = json.loads(data)['posts']
 		correctURL = True
 	except ValueError as e: #Invalid Link
 		print('Error: Invalid URL')
@@ -37,30 +33,28 @@ def getImages():
 	except urllib.error.URLError as e: 
 		print(e.args)
 
+	noPosts = len(json_data)
+
 	if correctURL:
-		soup = BeautifulSoup(data, 'html.parser')
-		imgs = soup.findAll("a", attrs={"class": "fileThumb", "href":True}) #Search data for image links
-		num = len(imgs) #Number of files being downloaded
+		for x in range(0, noPosts):
+			posts = json_data[x]
+			if posts.get("tim") is not None:
+				image = urllib.request.urlopen("http://i.4cdn.org/" + board + "/" + str(posts.get("tim")) + posts.get("ext"))
+				filename = str(posts.get("tim")) + posts.get("ext")
+				file = open(path + filename, "wb")
+				file.write(image.read())
+				file.close()
 
-		for a in imgs:
-			count += 1
-			print(str(count) +"/"+str(num)) #Gives indication of progress
-			img_url = a["href"]
-			img_data = urllib.request.urlopen("http:" + img_url)
-			a,b,c,d,filename = img_url.split("/") #Seperate filename from rest of href
-			file = open(path+filename, "wb")
-			file.write(img_data.read())
-			file.close()
-
-		print("Done")
+		print ("Done. (" + str(round(time.time() - start_time, 2)) + "s)" )
 
 	again = input("Repeat with a new link? y or n : ")
 	while again.upper() != "Y" and again.upper() != "N":
 		again = input("Repeat with a new link? y or n : ")
 	
-	if(again.upper() == "Y"):
-		getImages(); #Repeat
-	elif(again.upper() == "N"):
-		print("Finished.")
-		
-getImages();#Run
+	if(again.upper() == "N"):
+		print("Complete.")
+		return
+	elif(again.upper() == "Y"):
+		main()	
+	
+main()
