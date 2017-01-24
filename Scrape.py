@@ -18,7 +18,7 @@ def main():
 		jsonurl = "http://a.4cdn.org/" + board + "/thread/" + d + ".json"
 	except ValueError as e:
 		print('Error: Invalid URL')
-		invalidValue = True
+		return;
 
 	try: #Error handling, avoid program crashing
 		req = urllib.request.Request(jsonurl)
@@ -47,14 +47,22 @@ def main():
 
 		print ("Done. (" + str(round(time.time() - start_time, 2)) + "s)" )
 
+	#again = input("Repeat with a new link? y or n : ")
+	#while again.upper() != "Y" and again.upper() != "N":
+	#	again = input("Repeat with a new link? y or n : ")
+	#
+	#if(again.upper() == "N"):
+	#	print("Complete.")
+	#	return
+	#elif(again.upper() == "Y"):
+	#	main()
+while run:
+	main()
 	again = input("Repeat with a new link? y or n : ")
 	while again.upper() != "Y" and again.upper() != "N":
 		again = input("Repeat with a new link? y or n : ")
-	
-	if(again.upper() == "N"):
-		print("Complete.")
-		return
-	elif(again.upper() == "Y"):
-		main()	
-	
-main()
+
+	if (again.upper() == "N"):
+		run = False
+	elif (again.upper() == "Y"):
+		run = True
