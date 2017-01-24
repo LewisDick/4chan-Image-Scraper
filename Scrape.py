@@ -47,15 +47,6 @@ def main():
 
 		print ("Done. (" + str(round(time.time() - start_time, 2)) + "s)" )
 
-	#again = input("Repeat with a new link? y or n : ")
-	#while again.upper() != "Y" and again.upper() != "N":
-	#	again = input("Repeat with a new link? y or n : ")
-	#
-	#if(again.upper() == "N"):
-	#	print("Complete.")
-	#	return
-	#elif(again.upper() == "Y"):
-	#	main()
 while run:
 	main()
 	again = input("Repeat with a new link? y or n : ")
