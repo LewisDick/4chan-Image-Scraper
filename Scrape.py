@@ -7,18 +7,19 @@ path = location + "/imgs/"
 run = True
 
 if not os.path.exists(path):  # Check if an imgs folder has been made
-	os.mkdir(path)
+	os.mkdir(path) #make imgs folder
 
 def main():
-	start_time = time.time()
+	start_time = time.time() #Get current time for time calc
 	correctURL = False
 	url = input("Enter a url (including http://) : ")
+
 	try:
-		a, b, c, board, filename, d = url.split("/")
-		jsonurl = "http://a.4cdn.org/" + board + "/thread/" + d + ".json"
+		http, slash, slash1, board, thread, threadNo = url.split("/")
+		jsonurl = "http://a.4cdn.org/" + board + "/thread/" + threadNo + ".json"
 	except ValueError as e:
 		print('Error: Invalid URL')
-		return;
+		return; #Exit current
 
 	try: #Error handling, avoid program crashing
 		req = urllib.request.Request(jsonurl)
@@ -35,7 +36,7 @@ def main():
 
 	noPosts = len(json_data)
 
-	if correctURL:
+	if correctURL: #Runs if the url is valid
 		for x in range(0, noPosts):
 			posts = json_data[x]
 			if posts.get("tim") is not None:
@@ -47,7 +48,7 @@ def main():
 
 		print ("Done. (" + str(round(time.time() - start_time, 2)) + "s)" )
 
-while run:
+while run: #Loops while the user wants to keep going
 	main()
 	again = input("Repeat with a new link? y or n : ")
 	while again.upper() != "Y" and again.upper() != "N":
