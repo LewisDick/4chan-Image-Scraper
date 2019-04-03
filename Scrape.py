@@ -1,6 +1,7 @@
 import json, urllib, urllib.request, urllib.error, urllib.parse, os, time
 from queue import Queue
 from threading import Thread
+import argparse
 
 #TODO
 #-----------------------------
@@ -16,7 +17,7 @@ class DownloadWorker(Thread):
 
 	def run(self):
 		while True:
-	    	# Get the work from the queue and expand the tuple
+			# Get the work from the queue and expand the tuple
 			filename, board = self.queue.get()
 			download_image(filename, board)
 			self.queue.task_done()
@@ -33,7 +34,11 @@ if not os.path.exists(path):
 
 def main():
 
-	url = input("Enter a url (including http://) : ")
+	if args.url is not None:
+		url=args.url
+		print(args.url)
+	else:
+		url = input("Enter a url (including http://) : ")
 	url_parts = handle_url(url)
 	invalid_link = False
 	pull_image_urls(url_parts[0], url_parts[1])
@@ -94,9 +99,22 @@ def download_image(img_URL, board):
 	file = open(path + img_URL, "wb")
 	file.write(image.read())
 
+
+
+# Defining command line arguments
+parser=argparse.ArgumentParser()
+parser.add_argument('url', help='URL to grab images from. Will be asked for if not supplied', nargs='?')
+parser.add_argument('-n', help='Program will exit rather than ask for additional URLs', action='store_true')
+args=parser.parse_args()
+
 while run: #Loops while the user wants to keep going
 	main()
-	again = input("Repeat with a new link? y or n : ")
+	# Resets the url argument to none so that it doesn't run the same url again
+	args.url=None
+	if not args.n:
+		again = input("Repeat with a new link? y or n : ")
+	else:
+		again = 'N'
 	while again.upper() != "Y" and again.upper() != "N":
 		again = input("Repeat with a new link? y or n : ")
 
