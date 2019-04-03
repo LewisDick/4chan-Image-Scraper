@@ -22,15 +22,47 @@ class DownloadWorker(Thread):
 			download_image(filename, board)
 			self.queue.task_done()
 
+class JsonWorker():
+	def __init__(self, json_data):
+		self.json_data=json_data
+		self.img_URLS=[]
+	
+	def getImageURLs(self):
+		noPosts = len(self.json_data)
+		for x in range(0, noPosts):
+			posts = self.json_data[x]
+			if posts.get("tim") is not None:
+				currentImgURL = str(posts.get("tim")) + posts.get("ext")
+				self.img_URLS.append(currentImgURL)
+		print(str(len(self.img_URLS)) + " Images Found")
+		return self.img_URLS
+
+	def getPath(self):
+		location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+		if not args.d:
+			path = location + "/imgs/"
+		else:
+			if self.json_data[0].get('sub') is not None:
+				path=location+"/"+self.json_data[0].get('sub')+"/"
+			elif self.json_data[0].get('com') is not None:
+				try:
+					path=location+'/'+json_data[0].get('com')[:49]+'/'
+				except:
+					path=location+'/imgs/'
+		try:
+			if not os.path.exists(path):  
+				os.mkdir(path)
+		except FileNotFoundError as e: #should prevent issues with illegal filename characters + length
+			path=location+'/imgs/'
+			if not os.path.exists(path):  
+				os.mkdir(path)
+		return path
 
 img_URLS = []
-location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-path = location + "/imgs/"
+path=''
+# fallbackpath=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))+"/imgs/"
 invalid_link = True
 run = True
-#
-if not os.path.exists(path):  
-	os.mkdir(path)
 
 def main():
 
@@ -50,7 +82,7 @@ def main():
 		# Setting daemon to True will let the main thread exit even though the workers are blocking
 		worker.daemon = True
 		worker.start()
-
+	global img_URLS
 	for file in img_URLS:
 		queue.put((file, url_parts[1]))
 
@@ -85,18 +117,19 @@ def pull_image_urls(url, board):
 		print(e.args)
 		return
 
-	noPosts = len(json_data)
-
-	for x in range(0, noPosts):
-		posts = json_data[x]
-		if posts.get("tim") is not None:
-			currentImgURL = str(posts.get("tim")) + posts.get("ext")
-			img_URLS.append(currentImgURL)
-	print(str(len(img_URLS)) + " Images Found")
+	print('handling json')
+	JSON=JsonWorker(json_data)
+	global img_URLS
+	img_URLS=JSON.getImageURLs()
+	global path
+	path=JSON.getPath()
 
 def download_image(img_URL, board):
 	image = urllib.request.urlopen("http://i.4cdn.org/" + board + "/" + img_URL)
+	# try:
 	file = open(path + img_URL, "wb")
+	# except FileNotFoundError as e: #should prevent issues with illegal filenames
+	# 	file= open(fallbackpath+img_URL,"wb")
 	file.write(image.read())
 
 
@@ -105,6 +138,8 @@ def download_image(img_URL, board):
 parser=argparse.ArgumentParser()
 parser.add_argument('url', help='URL to grab images from. Will be asked for if not supplied', nargs='?')
 parser.add_argument('-n', help='Program will exit rather than ask for additional URLs', action='store_true')
+parser.add_argument('-d', help='Images will be saved in folders specific to each thread', action='store_true')
+# Prioritize thread subject then beginning of comment
 args=parser.parse_args()
 
 while run: #Loops while the user wants to keep going
