@@ -44,6 +44,7 @@ class JsonWorker():
 	#TODO --- Move creating the directory to its own class function
 	def getPath(self):
 		location=os.path.realpath(os.getcwd())
+		global folder_increment
 		#location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 		if not args.d:
 			path = location + "/imgs/"
@@ -55,17 +56,20 @@ class JsonWorker():
 				try:
 					path=location+'/'+self.json_data[0].get('com')[:49]+'/'
 				except:
-					path=location+'/imgs/'
+					path=location+'/imgs'+str(folder_increment)+'/'
+					folder_increment+=1
 		try:
 			if not os.path.exists(path):  
 				os.mkdir(path)
 		except FileNotFoundError as e: #should prevent issues with illegal filename characters + length
-			path=location+'/imgs/'
+			path=location+'/imgs'+str(folder_increment)+'/'
+			folder_increment+=1
 			if not os.path.exists(path):  
 				os.mkdir(path)
 		return path
 
 img_URLS = []
+folder_increment=0
 path=''
 invalid_link = True
 run = True
