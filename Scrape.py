@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import json, urllib, urllib.request, urllib.error, urllib.parse, os, time
 from queue import Queue
 from threading import Thread
@@ -42,7 +43,8 @@ class JsonWorker():
 	# Returns the filepath string to the directory to store the files.
 	#TODO --- Move creating the directory to its own class function
 	def getPath(self):
-		location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+		location=os.path.realpath(os.getcwd())
+		#location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 		if not args.d:
 			path = location + "/imgs/"
 		else:
